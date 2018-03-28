@@ -1,2 +1,2 @@
 # topcoder
-[topcoder](http://topcoder.site./)
+[topcoder](http://topcoder.site/)
