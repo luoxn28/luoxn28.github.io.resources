@@ -9,3 +9,7 @@ type: "about"
 工程师，关注架构、互联网技术、金融等。
 
 我的Github：https://github.com/luoxn28
+
+---
+
+* [我的收藏](/collections) - 个人整理的一些优秀的网址/博客
