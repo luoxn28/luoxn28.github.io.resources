@@ -18,7 +18,7 @@ tags: [消息队列, Rocketmq]
 3、Consumer如何高效的与Broker通信；
 4、Consumer中有哪些线程，它们之间如何相互配置，完成消息拉取、消费工作的。
 
-分析Consumer，最好搭建一个[Rocketmq](https://github.com/apache/rocketmq)的源码工程，方便调试和打印数据，方便分析代码，因为Consumer中有多个线程(池)并且是基于Netty，也就说流程几乎都是异步进行的，如果不进行调试，不太容易分析代码流程，当然，如果是大神，这句话就可以直接忽略了。笔者下载的源码是4.2.0版本的，下面我们从一个Consumer push模式的例子开始Consumer的分析，后续的分析以该例子展开。
+分析Consumer，最好搭建一个[Rocketmq](https://github.com/apache/rocketmq)的源码工程，方便调试和打印数据，方便分析代码，因为Consumer中有多个线程(池)并且是基于Netty，也就是说流程几乎都是异步进行的，如果不进行调试，不太容易分析代码流程，当然，如果是大神，这句话就可以直接忽略了。笔者下载的源码是4.2.0版本的，下面我们从一个Consumer push模式的例子开始Consumer的分析，后续的分析以该例子展开。
 
 ```
 public void consumer() throws Exception {
@@ -638,7 +638,7 @@ private void pullMessageAsync(
 
 到这里为止，我们已经知道了Consumer端消息拉取消费的整个流程了，这里做个小结：**首先pullMessageServer从pullRequestQueue中提取数据，向Broker发起异步请求，在ResponseFuture中会调用pullCallback.onSuccess(pullResult)。这样也就走到了onSuccess流程中，也就是在NettyClientPublicExecutor线程池中，然后会将消息封装成任务submit到ConsumeMessageThread，这样就会触发我们自定义的MessageListener了。在onSuccess方法中，还会调用DefaultMQPushConsumerImpl.this.executePullRequestXxx将pullRequest在put回pullMessageServer的pullRequestQueue中，这样就形成了一个循环了，Consumer端可以自我驱动，不停的进行消息pull和消费操作了。**(如果不借助于外力停止，Consumer会一直沉浸在自己的世界不能自拔了...)
 
-注意，pullMessageServer中pullRequestQueue最开始的数据是谁put的呢？**RebalanceService线程在启动时会向broker发起获取queue对应的nextOffset，然后将queue及其nextOffset封装成pullMessageRequest消息put到pullMessageServer的pullRequestQueue。**这样相当于给pullRequestQueue几个初始化数据，然后**pullMessageServer**就能开心的自我驱动执行消息拉取和消费的工作了。
+注意，pullMessageServer中pullRequestQueue最开始的数据是谁put的呢？**RebalanceService线程在启动时会向broker发起获取(该consumerGroup订阅的topic下)queue对应的nextOffset，然后将queue及其nextOffset封装成pullMessageRequest消息put到pullMessageServer的pullRequestQueue。**这样相当于给pullRequestQueue几个初始化数据，然后**pullMessageServer**就能开心的自我驱动执行消息拉取和消费的工作了。
 
 ### Consumer端的线程
 
