@@ -6,7 +6,7 @@ type: "about"
 
 #### 关于我
 
-程序员，关注架构、互联网技术、金融等。
+在杭州搬砖的程序员，关注架构、互联网技术、金融等。
 
 我的Github：https://github.com/luoxn28
 
